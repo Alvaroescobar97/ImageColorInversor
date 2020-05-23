@@ -5,3 +5,10 @@ C:\Users\crisf\source\repos\Image Color Inversor\Image Color Inversor\obj\Debug\
 C:\Users\crisf\source\repos\Image Color Inversor\Image Color Inversor\obj\Debug\Image Color Inversor.csproj.CoreCompileInputs.cache
 C:\Users\crisf\source\repos\Image Color Inversor\Image Color Inversor\obj\Debug\Image Color Inversor.exe
 C:\Users\crisf\source\repos\Image Color Inversor\Image Color Inversor\obj\Debug\Image Color Inversor.pdb
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\bin\Debug\Image Color Inversor.exe.config
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\bin\Debug\Image Color Inversor.exe
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\bin\Debug\Image Color Inversor.pdb
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\obj\Debug\Image Color Inversor.csprojAssemblyReference.cache
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\obj\Debug\Image Color Inversor.csproj.CoreCompileInputs.cache
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\obj\Debug\Image Color Inversor.exe
+C:\Users\crisf\source\repos\ImageColorInversor\Image Color Inversor\obj\Debug\Image Color Inversor.pdb

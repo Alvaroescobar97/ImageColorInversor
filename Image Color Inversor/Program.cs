@@ -6,28 +6,35 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Diagnostics;
+using System.IO;
 
 namespace Image_Color_Inversor
 {
     class Program
     {
+        public static string[] filenames = { "64x64", "160x160", "512x512", "1500x1500" };
         static void Main(string[] args)
         {
-            var times = new List<long>();
-            var image = (Bitmap)Image.FromFile("C:/Users/crisf/Pictures/53389.jpg");
+            var filepath = filenames[0];
+            var times = new List<double>();
+            var image = ConvertTo16bpp(Image.FromFile("../Images/" + filepath + ".jpg"));
             Console.WriteLine(image.Height + "x" + image.Width);
-            for (int k = 0; k < 1; k++)
+            StreamWriter writer = new StreamWriter("../Data/times.txt");
+            for (int k = 0; k < 60; k++)
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                version5(image);
+                version1(image);
                 sw.Stop();
-                var time = (long)(sw.ElapsedMilliseconds * 1000);
-                times.Add(time);
+                double time = sw.ElapsedMilliseconds * 1000;
+                Console.WriteLine(times.Count + 1 + ". " + time);
+                writer.WriteLine(Math.Round(time / (image.Height * image.Width), 4));
+                times.Add(time/(image.Height*image.Width));
             }
             
-            Console.WriteLine(times.Sum()/times.Count);
-            image.Save("C:/Users/crisf/Pictures/Inverted.jpeg", ImageFormat.Jpeg);
+            Console.WriteLine("Mean time: {0}", times.Sum()/times.Count);
+            writer.Close();
+            image.Save("../Images/" + filepath + "Inverted.jpeg", ImageFormat.Jpeg);
             Console.ReadLine();
         }
 
@@ -133,6 +140,30 @@ namespace Image_Color_Inversor
                     image.SetPixel(j+1, i+1, nc);
                 }
             }
+        }
+
+        public static Bitmap ConvertTo16bpp(Image img)
+        {
+            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format16bppRgb555);
+            using (var gr = Graphics.FromImage(bmp))
+                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
+            return bmp;
+        }
+
+        public static Bitmap ConvertTo24bpp(Image img)
+        {
+            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format24bppRgb);
+            using (var gr = Graphics.FromImage(bmp))
+                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
+            return bmp;
+        }
+
+        public static Bitmap ConvertTo48bpp(Image img)
+        {
+            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format48bppRgb);
+            using (var gr = Graphics.FromImage(bmp))
+                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
+            return bmp;
         }
     }
 }
