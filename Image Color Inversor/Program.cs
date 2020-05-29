@@ -13,157 +13,177 @@ namespace Image_Color_Inversor
     class Program
     {
         public static string[] filenames = { "64x64", "160x160", "512x512", "1500x1500" };
+        public static Dictionary<int, int> max = new Dictionary<int, int>();
+        public static Dictionary<int, PixelFormat> bpp = new Dictionary<int, PixelFormat>();
         static void Main(string[] args)
         {
-            var filepath = filenames[0];
+            max.Add(16, 31);
+            max.Add(24, 255);
+            max.Add(48, 8192);
+            bpp.Add(16, PixelFormat.Format16bppRgb565);
+            bpp.Add(24, PixelFormat.Format24bppRgb);
+            bpp.Add(48, PixelFormat.Format48bppRgb);
+            Converter c = new Converter();
+            //BitsPerPixel
+            var bp = 16;
+            //File
+            var filepath = filenames[3];
             var times = new List<double>();
-            var image = ConvertTo16bpp(Image.FromFile("../Images/" + filepath + ".jpg"));
-            Console.WriteLine(image.Height + "x" + image.Width);
+            var image = c.convertToRGB(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp]);
+
+            Console.WriteLine("Image size: " + filepath + ". " + image.GetLength(0) + "x" + image.GetLength(1));
             StreamWriter writer = new StreamWriter("../Data/times.txt");
-            for (int k = 0; k < 60; k++)
+            for (int k = 0; k < 3; k++)
             {
                 Stopwatch sw = new Stopwatch();
+                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x=> x.B).Max());
+                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.G).Max());
+                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.R).Max());
                 sw.Start();
-                version1(image);
+                //Version
+                version5(image, max[bp]);
                 sw.Stop();
-                double time = sw.ElapsedMilliseconds * 1000;
-                Console.WriteLine(times.Count + 1 + ". " + time);
-                writer.WriteLine(Math.Round(time / (image.Height * image.Width), 4));
-                times.Add(time/(image.Height*image.Width));
+                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.B).Average());
+                double time = sw.ElapsedMilliseconds * 1000000;
+                times.Add(time);
             }
-            
             Console.WriteLine("Mean time: {0}", times.Sum()/times.Count);
             writer.Close();
-            image.Save("../Images/" + filepath + "Inverted.jpeg", ImageFormat.Jpeg);
-            Console.ReadLine();
+            c.convertToImage(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp], image);
         }
 
-        public static void version1(Bitmap image)
+        public static void version1(RGB[,] image, int max)
         {
-            for (int i = 0; i < image.Height; i++)
+            for (int i = 0; i < image.GetLength(0); i++)
             {
-                for (int j = 0; j < image.Width; j++)
+                for (int j = 0; j < image.GetLength(1); j++)
                 {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j, i, nc);
+                    image[i, j].R = max - image[i, j].R;
+                    if(max == 31)
+                    {
+                        image[i, j].G = 63 - image[i, j].G;
+                    }
+                    else
+                    {
+                        image[i, j].G = max - image[i, j].G;
+                    }
+                    
+                    image[i, j].B = max - image[i, j].B;
                 }
             }
         }
 
-        public static void version2(Bitmap image)
+        public static void version2(RGB[,] image, int max)
         {
-            for (int i = 0; i < image.Height; i++)
+            for (int i = 0; i < image.GetLength(0); i++)
             {
-                for (int j = 0; j < image.Width; j++)
+                for (int j = 0; j < image.GetLength(1); j++)
                 {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, 255 - c.R, c.G, c.B);
-                    image.SetPixel(j, i, nc);
+                    image[i, j].R = max - image[i, j].R;
                 }
             }
-            for (int i = 0; i < image.Height; i++)
+            for (int i = 0; i < image.GetLength(0); i++)
             {
-                for (int j = 0; j < image.Width; j++)
+                for (int j = 0; j < image.GetLength(1); j++)
                 {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, c.R, 255 - c.G, c.B);
-                    image.SetPixel(j, i, nc);
+                    if (max == 31)
+                    {
+                        image[i, j].G = 63 - image[i, j].G;
+                    }
+                    else
+                    {
+                        image[i, j].G = max - image[i, j].G;
+                    }
                 }
             }
-            for (int i = 0; i < image.Height; i++)
+            for (int i = 0; i < image.GetLength(0); i++)
             {
-                for (int j = 0; j < image.Width; j++)
+                for (int j = 0; j < image.GetLength(1); j++)
                 {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, c.R, c.G, 255 - c.B);
-                    image.SetPixel(j, i, nc);
-                }
-            }
-        }
-
-        public static void version3(Bitmap image)
-        {
-            for (int i = 0; i < image.Width; i++)
-            {
-                for (int j = 0; j < image.Height; j++)
-                {
-                    Color c = image.GetPixel(i, j);
-                    Color nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(i, j, nc);
+                    image[i, j].B = max - image[i, j].B;
                 }
             }
         }
 
-        public static void version4(Bitmap image)
+        public static void version3(RGB[,] image, int max)
         {
-            for (int i = 0; i < image.Height; i++)
+            for (int i = 0; i < image.GetLength(1); i++)
             {
-                for (int j = 0; j < image.Width; j++)
+                for (int j = 0; j < image.GetLength(0); j++)
                 {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, 255 - c.R, c.G, c.B);
-                    image.SetPixel(j, i, nc);
-                }
-            }
-            for (int i = image.Height - 1; i > -1 ; i--)
-            {
-                for (int j = image.Width - 1; j > -1; j--)
-                {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j, i, nc);
-                }
-            }
-        }
+                    image[j, i].R = max - image[j, i].R;
+                    if (max == 31)
+                    {
+                        image[j, i].G = 63 - image[j, i].G;
+                    }
+                    else
+                    {
+                        image[j, i].G = max - image[j, i].G;
+                    }
 
-        public static void version5(Bitmap image)
-        {
-            for (int i = 0; i < image.Height; i+=2)
-            {
-                for (int j = 0; j < image.Width; j+=2)
-                {
-                    Color c = image.GetPixel(j, i);
-                    Color nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j, i, nc);
-
-                    c = image.GetPixel(j, i+1);
-                    nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j, i+1, nc);
-
-                    c = image.GetPixel(j+1, i);
-                    nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j+1, i, nc);
-
-                    c = image.GetPixel(j+1, i+1);
-                    nc = Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B);
-                    image.SetPixel(j+1, i+1, nc);
+                    image[j, i].B = max - image[j, i].B;
                 }
             }
         }
 
-        public static Bitmap ConvertTo16bpp(Image img)
+        public static void version4(RGB[,] image, int max)
         {
-            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format16bppRgb555);
-            using (var gr = Graphics.FromImage(bmp))
-                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
-            return bmp;
+            for (int i = 0; i < image.GetLength(0); i++)
+            {
+                for (int j = 0; j < image.GetLength(1); j++)
+                {
+                    image[i, j].R = max - image[i, j].R;
+                }
+            }
+            for (int i = image.GetLength(0) - 1; i > -1 ; i--)
+            {
+                for (int j = image.GetLength(1) - 1; j > -1; j--)
+                {
+                    if (max == 31)
+                    {
+                        image[i, j].G = 63 - image[i, j].G;
+                    }
+                    else
+                    {
+                        image[i, j].G = max - image[i, j].G;
+                    }
+
+                    image[i, j].B = max - image[i, j].B;
+                }
+            }
         }
 
-        public static Bitmap ConvertTo24bpp(Image img)
+        public static void version5(RGB[,] image, int max)
         {
-            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format24bppRgb);
-            using (var gr = Graphics.FromImage(bmp))
-                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
-            return bmp;
-        }
+            for (int i = 0; i < image.GetLength(0); i+=2)
+            {
+                for (int j = 0; j < image.GetLength(1); j+=2)
+                {
+                    image[i, j].R = max - image[i, j].R;
+                    image[i+1, j].R = max - image[i+1, j].R;
+                    image[i, j+1].R = max - image[i, j+1].R;
+                    image[i+1, j+1].R = max - image[i+1, j+1].R;
+                    if (max == 31)
+                    {
+                        image[i, j].G = 63 - image[i, j].G;
+                        image[i + 1, j].G = 63 - image[i + 1, j].G;
+                        image[i, j + 1].G = 63 - image[i, j + 1].G;
+                        image[i + 1, j + 1].G = 63 - image[i + 1, j + 1].G;
+                    }
+                    else
+                    {
+                        image[i, j].G = max - image[i, j].G;
+                        image[i + 1, j].G = max - image[i + 1, j].G;
+                        image[i, j + 1].G = max - image[i, j + 1].G;
+                        image[i + 1, j + 1].G = max - image[i + 1, j + 1].G;
+                    }
 
-        public static Bitmap ConvertTo48bpp(Image img)
-        {
-            var bmp = new Bitmap(img.Width, img.Height, PixelFormat.Format48bppRgb);
-            using (var gr = Graphics.FromImage(bmp))
-                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
-            return bmp;
+                    image[i, j].B = max - image[i, j].B;
+                    image[i + 1, j].B = max - image[i + 1, j].B;
+                    image[i, j + 1].B = max - image[i, j + 1].B;
+                    image[i + 1, j + 1].B = max - image[i + 1, j + 1].B;
+                }
+            }
         }
     }
 }
