@@ -12,7 +12,9 @@ namespace Image_Color_Inversor
 {
     class Program
     {
-        public static string[] filenames = { "64x64", "160x160", "512x512", "1500x1500" };
+        //The images are stored in the directory bin/Images/
+        //The times are stored in the directory bin/Data/
+        public static string[] filenames = { "64x64", "160x160", "512x512", "1500x1500"};
         public static Dictionary<int, int> max = new Dictionary<int, int>();
         public static Dictionary<int, PixelFormat> bpp = new Dictionary<int, PixelFormat>();
         static void Main(string[] args)
@@ -23,33 +25,36 @@ namespace Image_Color_Inversor
             bpp.Add(16, PixelFormat.Format16bppRgb565);
             bpp.Add(24, PixelFormat.Format24bppRgb);
             bpp.Add(48, PixelFormat.Format48bppRgb);
-            Converter c = new Converter();
-            //BitsPerPixel
-            var bp = 16;
-            //File
+            Converter converter = new Converter();
+            //select the #BitsPerPixel
+            var bp = 48;
+            //select the File
             var filepath = filenames[3];
             var times = new List<double>();
-            var image = c.convertToRGB(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp]);
+            //Read the image and return a matrix of rgb objects 
+            var image = converter.convertToRGB(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp]);
 
             Console.WriteLine("Image size: " + filepath + ". " + image.GetLength(0) + "x" + image.GetLength(1));
             StreamWriter writer = new StreamWriter("../Data/times.txt");
-            for (int k = 0; k < 3; k++)
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            sw.Stop();
+            //It must execute the for and odd number of times to see the image inverted.
+            //Otherwise, will see the same image (Invert the inverted image will give the original image)
+            for (int k = 0; k < 60; k++)
             {
-                Stopwatch sw = new Stopwatch();
-                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x=> x.B).Max());
-                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.G).Max());
-                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.R).Max());
-                sw.Start();
-                //Version
-                version5(image, max[bp]);
+                sw.Restart();
+                //Select the algorithm version
+                version2(image, max[bp]);
                 sw.Stop();
-                //Console.WriteLine(image.Cast<RGB>().ToList().Select(x => x.B).Average());
-                double time = sw.ElapsedMilliseconds * 1000000;
+                double time = sw.Elapsed.TotalMilliseconds * 1000000;
                 times.Add(time);
+                writer.WriteLine(time);
             }
             Console.WriteLine("Mean time: {0}", times.Sum()/times.Count);
             writer.Close();
-            c.convertToImage(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp], image);
+            //Save the image
+            converter.convertToImage(Image.FromFile("../Images/" + filepath + ".jpg"), bpp[bp], image);
         }
 
         public static void version1(RGB[,] image, int max)
